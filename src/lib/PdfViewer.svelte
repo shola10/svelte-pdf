@@ -10,7 +10,6 @@
   export let data;
   export let scale = 1.8;
   export let pageNum = 1; //must be number
-  export let flipTime = 120; //by default 2 minute, value in seconds
   export let showButtons = true; //boolean
   export let showBorder = true; //boolean
   export let totalPage = 0;
@@ -29,7 +28,6 @@
   let autoFlip = false;
   let interval;
   let secondInterval;
-  let seconds = flipTime;
   let pages = [];
   let password = "";
   let passwordError = false;
@@ -182,24 +180,6 @@
   initialLoad();
   $: if (isInitialised) queueRenderPage(pageNum);
 
-  //turn page after certain time interval
-  const onPageTurn = () => {
-    autoFlip = !autoFlip;
-    if (autoFlip === false) {
-      clearInterval(interval); //stop autoflip
-      clearInterval(secondInterval); //stop countdown seconds
-    }
-    if (autoFlip === true && pageNum <= totalPage) {
-      //countdown seconds
-      secondInterval = setInterval(() => {
-        seconds = seconds - 1;
-      }, 1000);
-      interval = setInterval(() => {
-        seconds = flipTime; //reset second after page flip
-        onNextPage();
-      }, flipTime * 1000); //every {flipTime} seconds
-    }
-  };
   //Download pdf function
   const downloadPdf = (fileURL) => {
     let fileName = fileURL.substring(fileURL.lastIndexOf("/") + 1);
@@ -316,25 +296,6 @@
             <span
               slot="activator"
               class="button-control"
-              on:click={() => printPdf(url)}
-            >
-              <svg
-                class="icon"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  d="M4 16H0V6h20v10h-4v4H4v-4zm2-4v6h8v-6H6zM4 0h12v5H4V0zM2
-                  8v2h2V8H2zm4 0v2h2V8H6z"
-                />
-              </svg>
-            </span>
-            Print
-          </Tooltip>
-          <Tooltip>
-            <span
-              slot="activator"
-              class="button-control"
               on:click={() => antiClockwiseRotate()}
             >
               <svg
@@ -385,45 +346,6 @@
             </span>
             Download
           </Tooltip>
-          <Tooltip>
-            <span
-              slot="activator"
-              class="page-info button-control"
-              on:click={() => onPageTurn()}
-            >
-              <svg
-                class="icon"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-              >
-                {#if autoFlip === true}
-                  <path d="M4 18h12V6h-4V2H4v16zm-2 1V0h12l4 4v16H2v-1z" />
-                {:else}
-                  <path
-                    d="M9.896,3.838L0.792,1.562v14.794l9.104,2.276L19,16.356V1.562L9.896,3.838z
-                    M9.327,17.332L1.93,15.219V3.27 l7.397,1.585V17.332z
-                    M17.862,15.219l-7.397,2.113V4.855l7.397-1.585V15.219z"
-                  />
-                {/if}
-              </svg>
-            </span>
-            {autoFlip === true ? seconds : "Auto Turn Page"}
-          </Tooltip>
-          <span class="page-info">
-            <svg
-              class="icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <path
-                d="M16.32 7.1A8 8 0 1 1 9 4.06V2h2v2.06c1.46.18 2.8.76 3.9
-                1.62l1.46-1.46 1.42 1.42-1.46 1.45zM10 18a6 6 0 1 0 0-12 6 6 0 0
-                0 0 12zM7 0h6v2H7V0zm5.12 8.46l1.42 1.42L10 13.4 8.59
-                12l3.53-3.54z"
-              />
-            </svg>
-            <span class="text">{readingTime} min read</span>
-          </span>
           <span class="page-info">
             <svg
               class="icon"
@@ -456,11 +378,6 @@
       </div>
     {/if}
   </div>
-  <button id="topBtn" on:click={() => window.scrollTo(0, 0)}>
-    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-      <path d="M7 10v8h6v-8h5l-8-8-8 8h5z" />
-    </svg>
-  </button>
 </div>
 
 <style>
@@ -470,7 +387,6 @@
   .parent {
     display: flex;
     flex-direction: column;
-    margin: 0 1.25rem;
   }
   .password-viewer {
     border-width: 1px;
@@ -509,8 +425,6 @@
   .control {
     margin-top: 1.25rem;
     margin-bottom: 0;
-    margin-right: 2.5rem;
-    margin-left: 2.5rem;
     border-radius: 0.25rem;
     overflow: auto;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
@@ -519,7 +433,7 @@
     border-width: 1px;
   }
   .control-start {
-    padding: 1.25rem;
+    padding: 0rem;
   }
   .line {
     display: flex;
@@ -531,7 +445,6 @@
     border-left-width: 0px;
     border-color: #4fd1c5;
     border-style: dotted;
-    margin-bottom: 0.75rem;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
     justify-content: center;
@@ -578,23 +491,6 @@
   }
   .rot-icon {
     transform: scaleX(-1);
-  }
-  #topBtn {
-    position: fixed;
-    bottom: 10px;
-    float: right;
-    right: 10%;
-    left: 90%;
-    max-width: 30px;
-    width: 100%;
-    border-color: #000;
-    background-color: #fff;
-    padding: 0.5px;
-    border-radius: 9999px;
-  }
-  #topBtn:hover {
-    background-color: #000;
-    color: #fff;
   }
   /* 
   ##Device = Tablets, Ipads (portrait)
